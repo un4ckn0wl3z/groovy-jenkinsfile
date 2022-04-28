@@ -1,0 +1,28 @@
+pipeline {
+    agent any
+
+    tools {
+        maven "maven-3.6"
+        // gradle
+        // jdk
+    } 
+
+    stages {
+        stage("build") {
+            steps {
+                echo "building application....."
+                sh "mvn install"
+            }
+        }
+        stage("test") {
+            steps {
+                 echo "testing application....."
+            }
+        }
+        stage("deploy") {
+            steps {
+                echo "deploying application....."
+            }
+        }                
+    }
+}

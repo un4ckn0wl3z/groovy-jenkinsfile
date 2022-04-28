@@ -1,0 +1,25 @@
+pipeline {
+    agent any 
+    stages {
+        stage("build") {
+            steps {
+                echo "buiding application....."
+            }
+        }
+        stage("test") {
+            when {
+                expression {
+                    BRANCH_NAME == 'dev'
+                }
+            }
+            steps {
+                 echo "testing application....."
+            }
+        }
+        stage("deploy") {
+            steps {
+                echo "deploying application....."
+            }
+        }                
+    }
+}
