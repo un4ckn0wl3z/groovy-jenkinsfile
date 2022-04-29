@@ -1,6 +1,14 @@
 #!/usr/bin/env groovy
+// for global: @Library("jenkins-shared-library@master")
 
-@Library("jenkins-shared-library")
+
+library identifier: 'jenkins-shared-library@master', retriever: modernSCM(
+    [$class: 'GitSCMSource', 
+        remote: 'https://gitlab.com/un4ckn0wl3z/jenkins-shared-library.git',
+        credentialsId: 'gitlab-credentials'
+    ]
+)
+
 def imageName = "un4ckn0wl3z/java-maven-app"
 def version = "dev-3.0"
 
