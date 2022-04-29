@@ -1,0 +1,46 @@
+#!/usr/bin/env groovy
+
+@Library("jenkins-shared-library")
+def imageName = "un4ckn0wl3z/java-maven-app"
+def version = "dev-3.0"
+
+pipeline {
+    agent any
+
+    tools {
+        maven "maven-3.6"
+    } 
+
+    stages {
+
+
+        stage("build jar") {
+            steps {
+                script {
+                    buildJar()
+                }
+            }
+        }
+
+        stage("build and push image") {
+            steps {
+                script {
+                    buildImage(imageName, version)
+                    dockerLogin()
+                    pushImage(imageName, version)
+                }
+            }
+        }
+
+        stage("deploy") {
+            steps {
+                script {
+                    echo "deploying the application..."
+                }
+            }
+        }     
+
+
+
+    }
+}
