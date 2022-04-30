@@ -1,0 +1,78 @@
+#!/usr/bin/env groovy
+
+def fullImageName = ''
+
+pipeline {
+
+    agent any
+    
+    tools {
+        nodejs 'nodejs-18'
+    }
+    
+    environment {
+        IMAGE_NAME = 'un4ckn0wl3z/react-nodejs'
+        IMAGE_VERSION = ''
+    }
+
+    stages {
+        stage("versioning") {
+            steps {
+                script {
+                    echo "versioning application....."
+                    sh "cd api && npm version minor && cd .."
+                    sh "cd my-app && npm version minor && cd .."
+                    fullImageName = "${IMAGE_NAME}:build-${BUILD_NUMBER}"
+                }
+            }
+        }
+        stage("build") {
+            steps {
+                script {
+                    echo "building application....."
+                    sh "docker build -t ${fullImageName} . "
+                    sh "docker push ${fullImageName}"
+                }
+            }
+        }
+        stage("test") {
+            steps {
+                script {
+                    echo "testing application....."
+                }
+            }
+        }
+        stage("deploy") {
+            steps {
+                script {
+                    def dockerCmd = "docker run -p 3000:3080 -d --name react-nodejs ${fullImageName}"
+                    sshagent(['ec2-server-key']) {
+                        sh "ssh -o StrictHostKeyChecking=no ec2-user@52.221.233.16 docker rm -f react-nodejs"
+                        sh "ssh -o StrictHostKeyChecking=no ec2-user@52.221.233.16 ${dockerCmd}"
+                    }
+                }
+            }
+        }     
+
+        stage('Update GIT') {
+        steps {
+            script {
+                withCredentials([usernamePassword(credentialsId: 'gitlab-credentials', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
+                    def encodedPassword = URLEncoder.encode("$GIT_PASSWORD",'UTF-8')
+                    sh "git config user.email jenkins@unkclub.com"
+                    sh "git config user.name jenkins"
+
+                    sh "git remote set-url origin https://${GIT_USERNAME}:${encodedPassword}@gitlab.com/${GIT_USERNAME}/react-nodejs-example.git"
+
+                    sh "git add ."
+                    sh "git commit -m '[CI] version bump from build number: ${env.BUILD_NUMBER}'"
+                    sh "git push origin HEAD:$BRANCH_NAME"
+                }
+            }
+        }
+        }
+
+
+
+    }
+}
