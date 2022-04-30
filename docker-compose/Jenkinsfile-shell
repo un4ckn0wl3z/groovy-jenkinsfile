@@ -1,6 +1,7 @@
 #!/usr/bin/env groovy
 
 def fullImageName = ''
+def server = "ec2-user@52.221.233.16"
 
 pipeline {
 
@@ -48,9 +49,9 @@ pipeline {
 
                     def shellCmd = "bash ./startup.sh ${fullImageName}"
                     sshagent(['ec2-server-key']) {
-                        sh "scp docker-compose.yml ec2-user@52.221.233.16:/home/ec2-user"
-                        sh "scp startup.sh ec2-user@52.221.233.16:/home/ec2-user"
-                        sh "ssh -o StrictHostKeyChecking=no ec2-user@52.221.233.16 ${shellCmd}"
+                        sh "scp docker-compose.yml ${server}:/home/ec2-user"
+                        sh "scp startup.sh ${server}:/home/ec2-user"
+                        sh "ssh -o StrictHostKeyChecking=no ${server} ${shellCmd}"
                     }
                 }
             }
